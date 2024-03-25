@@ -9,13 +9,13 @@
 3. Ośka - 3 tygodnie
 4. Kółka - 2 tygodnie
 
-Czas realizacji deskorolki - 1 tygdzień
+Czas realizacji deskorolki - 1 tydzień
 
 Jednokrotna produkcja - 15 deskorolek
 
 ## Zespół:
 
-Łukasz Checiak 221540 (Kierownik zespołu)
-Markiian Holovchak 222558
-Wojciech Bartoszek 223051
-Kamil Sekuła 219167
+1. Łukasz Checiak 221540 (Kierownik zespołu)
+2. Markiian Holovchak 222558
+3. Wojciech Bartoszek 223051
+4. Kamil Sekuła 219167
