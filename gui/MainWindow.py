@@ -2,7 +2,7 @@ import json
 
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QGridLayout, QWidget, QLabel, QTableWidget, QTableWidgetItem, QSizePolicy, QSpacerItem, QTabWidget, QComboBox, QLayout, QHeaderView
+from PyQt6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QLabel, QTableWidget, QTableWidgetItem, QSizePolicy, QSpacerItem, QTabWidget, QComboBox, QHeaderView
 
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -76,18 +76,15 @@ class MainWindow(QMainWindow):
         with open("data/materials.json") as f:
             materials = json.load(f)
 
-        materials = dict(sorted(materials.items(), key=lambda item: item[1]["level"]))
-        column_names = list(list(materials.values())[0].keys())
-        column_names = [item[0].upper() + item[1:].replace("_", " ") for item in column_names]
-        table = QTableWidget(len(materials), len(column_names))
-        table.setHorizontalHeaderLabels(column_names)
+        table = QTableWidget(5,5)
+        table.setHorizontalHeaderLabels(["Czas realizacji", "Na stanie", "Wielkość partii", "Wymagana ilość", "Poziom BOM"])
+        table.setVerticalHeaderLabels(["Deskorolka", "Kółko", "Ośka", "Truck", "Deska"])
 
-        row = 0
-        for component_name in materials.keys():
-            row_header = QTableWidgetItem(component_name.capitalize())
-            row_header.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            table.setVerticalHeaderItem(row, row_header)
-            row += 1
+        table.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+        table.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        table.horizontalHeader().setDisabled(True)
+        table.verticalHeader().setDisabled(True)
 
         row = 0
         for component_name, component_data in materials.items():
@@ -104,6 +101,7 @@ class MainWindow(QMainWindow):
         table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        table.sortByColumn(4, Qt.SortOrder.AscendingOrder)
         return table
 
     def init_orders_table(self):
@@ -111,19 +109,22 @@ class MainWindow(QMainWindow):
             orders_dict = json.load(f)
 
         table = QTableWidget(1, 7)
-        column_names = []
-        column = 0
-
+        table.setHorizontalHeaderLabels(["Tydzień 1", "Tydzień 2", "Tydzień 3", "Tydzień 4", "Tydzień 5", "Tydzień 6", "Tydzień 7"])
         table.setVerticalHeaderLabels(["Liczba"])
 
+        table.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+        table.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        table.horizontalHeader().setDisabled(True)
+        table.verticalHeader().setDisabled(True)
+
+        column = 0
         for dict in orders_dict:
-            column_names.append("Week " + str(dict["week"]))
             item = QTableWidgetItem(str(dict["orders"]))
             item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             table.setItem(0, column, item)
             column += 1
 
-        table.setHorizontalHeaderLabels(column_names)
         table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -131,16 +132,21 @@ class MainWindow(QMainWindow):
 
     def init_ghp_table(self):
         on_storage_label = QLabel(f"Na stanie: {0}")
-        column_headers = ["Tydzień 1", "Tydzień 2", "Tydzień 3", "Tydzień 4", "Tydzień 5", "Tydzień 6", "Tydzień 7"]
-        row_headers = ["Przewidywany popyt", "Produkcja", "Dostępne"]
 
         table = QTableWidget(3, 7)
-        table.setVerticalHeaderLabels(row_headers)
-        table.setHorizontalHeaderLabels(column_headers)
+        table.setHorizontalHeaderLabels(["Tydzień 1", "Tydzień 2", "Tydzień 3", "Tydzień 4", "Tydzień 5", "Tydzień 6", "Tydzień 7"])
+        table.setVerticalHeaderLabels(["Przewidywany popyt", "Produkcja", "Dostępne"])
+
+        table.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+        table.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        table.horizontalHeader().setDisabled(True)
+        table.verticalHeader().setDisabled(True)
 
         for col in range(0, 7):
             for row in range(0, 3):
                 item = QTableWidgetItem("0")
+                item.setFlags(Qt.ItemFlag.ItemIsEditable)
                 item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 table.setItem(row, col, item)
 
