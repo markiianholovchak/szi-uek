@@ -83,7 +83,7 @@ class MainWindow(QMainWindow):
 
         table = QTableWidget(5,5)
         table.setHorizontalHeaderLabels(["Czas realizacji", "Na stanie", "Wielkość partii", "Wymagana ilość", "Poziom BOM"])
-        table.setVerticalHeaderLabels(["Deskorolka", "Kółko", "Ośka", "Truck", "Deska"])
+        table.setVerticalHeaderLabels(["Deskorolka", "Deska", "Truck", "Ośka", "Kółko"])
 
         table.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
         table.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -235,5 +235,30 @@ class MainWindow(QMainWindow):
     def save_changed_materials_value(self, row, column):
         value = self.materials_table.item(row, column).text()
 
+        with open("data/materials.json", 'r') as f:
+            materials = json.load(f)
+
+        if row == 0:
+            materials.get("skateboard")[list(materials.get("skateboard").keys())[column]] = int(value)
+        elif row == 1:
+            materials.get("board")[list(materials.get("board").keys())[column]] = int(value)
+        elif row == 2:
+            materials.get("truck")[list(materials.get("truck").keys())[column]] = int(value)
+        elif row == 3:
+            materials.get("axle")[list(materials.get("axle").keys())[column]] = int(value)
+        elif row == 4:
+            materials.get("wheel")[list(materials.get("wheel").keys())[column]] = int(value)
+
+        with open("data/materials.json", 'w') as f:
+            json.dump(materials, f, indent=2)
+
     def save_changed_order_value(self, row, column):
         value = self.orders_table.item(row, column).text()
+
+        with open("data/orders.json", 'r') as f:
+            orders_dict = json.load(f)
+
+        orders_dict[column]["orders"] = int(value)
+
+        with open("data/orders.json", 'w') as f:
+            json.dump(orders_dict, f, indent=1)
