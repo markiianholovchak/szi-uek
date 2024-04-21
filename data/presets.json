@@ -33,7 +33,14 @@
                 "orders": 20
               }
         ],
-        "materials":{
+            "materials":{
+              "skateboard": {
+                "ready_in_weeks": 1,
+                "storage": 20,
+                "units_per_order": 15,
+                "units_required": 1,
+                "level": 0
+            },
             "board": {
                 "ready_in_weeks": 1,
                 "storage": 0,
@@ -61,13 +68,6 @@
                 "units_per_order": 40,
                 "units_required": 1,
                 "level": 2
-            },
-            "skateboard": {
-                "ready_in_weeks": 1,
-                "storage": 20,
-                "units_per_order": 15,
-                "units_required": 1,
-                "level": 0
             }
         }
     }
@@ -107,6 +107,13 @@
                   }
             ],
             "materials":{
+                  "skateboard": {
+                    "ready_in_weeks": 1,
+                    "storage": 0,
+                    "units_per_order": 25,
+                    "units_required": 1,
+                    "level": 0
+                },
                 "board": {
                     "ready_in_weeks": 1,
                     "storage": 0,
@@ -134,13 +141,6 @@
                     "units_per_order": 5,
                     "units_required": 1,
                     "level": 2
-                },
-                "skateboard": {
-                    "ready_in_weeks": 1,
-                    "storage": 0,
-                    "units_per_order": 25,
-                    "units_required": 1,
-                    "level": 0
                 }
             }
         }

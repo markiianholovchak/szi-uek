@@ -78,7 +78,7 @@ class MainWindow(QMainWindow):
         self.init_tabs()
 
     def init_materials_table(self):
-        with open("data/materials.json") as f:
+        with open("data/materials.json", 'r', encoding="utf-8") as f:
             materials = json.load(f)
 
         table = QTableWidget(5,5)
@@ -106,11 +106,10 @@ class MainWindow(QMainWindow):
         table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        table.sortByColumn(4, Qt.SortOrder.AscendingOrder)
         return table
 
     def init_orders_table(self):
-        with open("data/orders.json") as f:
+        with open("data/orders.json", 'r', encoding="utf-8") as f:
             orders_dict = json.load(f)
 
         table = QTableWidget(1, 7)
@@ -124,8 +123,8 @@ class MainWindow(QMainWindow):
         table.verticalHeader().setDisabled(True)
 
         column = 0
-        for dict in orders_dict:
-            item = QTableWidgetItem(str(dict["orders"]))
+        for dictionary in orders_dict:
+            item = QTableWidgetItem(str(dictionary["orders"]))
             item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             table.setItem(0, column, item)
             column += 1
@@ -183,7 +182,7 @@ class MainWindow(QMainWindow):
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         return table, title_label
-    
+
     def init_tabs(self):
         for i in range(0, 5):
             tab = self.tabs.widget(i)
@@ -199,14 +198,14 @@ class MainWindow(QMainWindow):
             tab.setLayout(vlayout)
 
     def init_presets(self):
-        with open("data/presets.json") as f:
+        with open("data/presets.json", 'r', encoding="utf-8") as f:
             presets = json.load(f)
 
         for preset in presets:
             self.preset_dropdown_menu.addItem(preset["name"])
 
     def change_preset(self, index):
-        with open("data/presets.json") as f:
+        with open("data/presets.json", 'r', encoding="utf-8") as f:
             presets = json.load(f)
 
         preset_name = self.preset_dropdown_menu.itemText(index)
@@ -227,15 +226,13 @@ class MainWindow(QMainWindow):
             for y in range(0, 5):
                 self.materials_table.item(x, y).setText(str(list(list(preset["values"]["materials"].values())[x].values())[y]))
 
-        self.materials_table.sortByColumn(4, Qt.SortOrder.AscendingOrder)
-
         for order in preset["values"]["orders"]:
             self.orders_table.item(0, order["week"] - 1).setText(str(order["orders"]))
 
     def save_changed_materials_value(self, row, column):
         value = self.materials_table.item(row, column).text()
 
-        with open("data/materials.json", 'r') as f:
+        with open("data/materials.json", 'r', encoding="utf-8") as f:
             materials = json.load(f)
 
         if row == 0:
@@ -249,16 +246,16 @@ class MainWindow(QMainWindow):
         elif row == 4:
             materials.get("wheel")[list(materials.get("wheel").keys())[column]] = int(value)
 
-        with open("data/materials.json", 'w') as f:
+        with open("data/materials.json", 'w', encoding="utf-8") as f:
             json.dump(materials, f, indent=2)
 
     def save_changed_order_value(self, row, column):
         value = self.orders_table.item(row, column).text()
 
-        with open("data/orders.json", 'r') as f:
+        with open("data/orders.json", 'r', encoding="utf-8") as f:
             orders_dict = json.load(f)
 
         orders_dict[column]["orders"] = int(value)
 
-        with open("data/orders.json", 'w') as f:
+        with open("data/orders.json", 'w', encoding="utf-8") as f:
             json.dump(orders_dict, f, indent=1)
