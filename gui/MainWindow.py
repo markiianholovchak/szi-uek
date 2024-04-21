@@ -72,6 +72,11 @@ class MainWindow(QMainWindow):
         self.preset_dropdown_menu.currentIndexChanged.connect(self.change_preset)
         self.init_presets()
 
+        self.materials_table.cellChanged.connect(self.save_changed_materials_value)
+        self.orders_table.cellChanged.connect(self.save_changed_order_value)
+
+        self.init_tabs()
+
     def init_materials_table(self):
         with open("data/materials.json") as f:
             materials = json.load(f)
@@ -109,7 +114,7 @@ class MainWindow(QMainWindow):
             orders_dict = json.load(f)
 
         table = QTableWidget(1, 7)
-        table.setHorizontalHeaderLabels(["Tydzień 1", "Tydzień 2", "Tydzień 3", "Tydzień 4", "Tydzień 5", "Tydzień 6", "Tydzień 7"])
+        table.setHorizontalHeaderLabels(["1", "2", "3", "4", "5", "6", "7"])
         table.setVerticalHeaderLabels(["Liczba"])
 
         table.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -134,7 +139,7 @@ class MainWindow(QMainWindow):
         on_storage_label = QLabel(f"Na stanie: {0}")
 
         table = QTableWidget(3, 7)
-        table.setHorizontalHeaderLabels(["Tydzień 1", "Tydzień 2", "Tydzień 3", "Tydzień 4", "Tydzień 5", "Tydzień 6", "Tydzień 7"])
+        table.setHorizontalHeaderLabels(["1", "2", "3", "4", "5", "6", "7"])
         table.setVerticalHeaderLabels(["Przewidywany popyt", "Produkcja", "Dostępne"])
 
         table.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -156,7 +161,42 @@ class MainWindow(QMainWindow):
         return table, on_storage_label
 
     def init_mrp_table(self, component):
-        pass
+        title_label = QLabel(component)
+        table = QTableWidget(6, 7)
+        table.setHorizontalHeaderLabels(["1", "2", "3", "4", "5", "6", "7"])
+        table.setVerticalHeaderLabels(["Całkowite zapotrzebowanie", "Planowane przyjęcia", "Przewidywane na stanie", "Zapotrzebowanie netto", "Planowane zamówienia", "Planowane przyjęcie zamówień"])
+
+        table.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+        table.verticalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        table.horizontalHeader().setDisabled(True)
+        table.verticalHeader().setDisabled(True)
+
+        for col in range(0, 7):
+            for row in range(0, 6):
+                item = QTableWidgetItem("0")
+                item.setFlags(Qt.ItemFlag.ItemIsEditable)
+                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                table.setItem(row, col, item)
+
+        table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        return table, title_label
+    
+    def init_tabs(self):
+        for i in range(0, 5):
+            tab = self.tabs.widget(i)
+            tab_name = self.tabs.tabText(i)
+
+            mrp_table, mrp_title = self.init_mrp_table(tab_name)
+            spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+            vlayout = QVBoxLayout()
+            vlayout.addWidget(mrp_title, alignment=Qt.AlignmentFlag.AlignCenter)
+            vlayout.addWidget(mrp_table)
+            vlayout.addItem(spacer)
+            tab.setLayout(vlayout)
 
     def init_presets(self):
         with open("data/presets.json") as f:
@@ -191,3 +231,9 @@ class MainWindow(QMainWindow):
 
         for order in preset["values"]["orders"]:
             self.orders_table.item(0, order["week"] - 1).setText(str(order["orders"]))
+
+    def save_changed_materials_value(self, row, column):
+        value = self.materials_table.item(row, column).text()
+
+    def save_changed_order_value(self, row, column):
+        value = self.orders_table.item(row, column).text()
