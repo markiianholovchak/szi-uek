@@ -20,57 +20,54 @@ class MainWindow(QMainWindow):
         self.widget.setLayout(self.hlayout)
         self.setCentralWidget(self.widget)
 
-        self.init_ui()
+        self.vleft_layout = QVBoxLayout()
+        self.vright_layout = QVBoxLayout()
 
-    def init_ui(self):
-        vleft_layout = QVBoxLayout()
-        vright_layout = QVBoxLayout()
+        self.vleft_layout.setContentsMargins(30, 10, 30, 10)
+        self.vright_layout.setContentsMargins(30, 10, 30, 10)
 
-        vleft_layout.setContentsMargins(30, 10, 30, 10)
-        vright_layout.setContentsMargins(30, 10, 30, 10)
+        self.preset_dropdown_menu = QComboBox()
 
-        preset_dropdown_menu = QComboBox()
+        self. materials_label = QLabel("Materiały")
+        self.orders_label = QLabel("Zamówienia")
 
-        materials_label = QLabel("Materiały")
-        orders_label = QLabel("Zamówienia")
+        self.materials_table = self.init_materials_table()
+        self.orders_table = self.init_orders_table()
 
-        materials_table = self.init_materials_table()
-        orders_table = self.init_orders_table()
+        self.spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.vleft_layout.addWidget(self.preset_dropdown_menu)
+        self.vleft_layout.addWidget(self.materials_label, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.vleft_layout.addWidget(self.materials_table)
+        self.vleft_layout.addWidget(self.orders_label, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.vleft_layout.addWidget(self.orders_table)
+        self.vleft_layout.addItem(self.spacer)
 
-        vleft_layout.addWidget(preset_dropdown_menu)
-        vleft_layout.addWidget(materials_label, alignment=Qt.AlignmentFlag.AlignHCenter)
-        vleft_layout.addWidget(materials_table)
-        vleft_layout.addWidget(orders_label, alignment=Qt.AlignmentFlag.AlignHCenter)
-        vleft_layout.addWidget(orders_table)
-        vleft_layout.addItem(spacer)
+        self.ghp_label = QLabel("Główny harmonogram producji")
+        self.ghp_table, self.ghp_on_storage_label = self.init_ghp_table()
 
-        ghp_label = QLabel("Główny harmonogram producji")
-        ghp_table, ghp_on_storage_label = self.init_ghp_table()
+        self.tabs = QTabWidget()
+        self.tabs.setTabPosition(QTabWidget.TabPosition.South)
 
-        tabs = QTabWidget()
-        tabs.setTabPosition(QTabWidget.TabPosition.South)
+        self.skateboard_tab = QWidget()
+        self.wheel_tab = QWidget()
+        self.axle_tab = QWidget()
+        self.truck_tab = QWidget()
+        self.board_tab = QWidget()
 
-        skateboard_tab = QWidget()
-        wheel_tab = QWidget()
-        axle_tab = QWidget()
-        truck_tab = QWidget()
-        board_tab = QWidget()
+        self.tabs.addTab(self.skateboard_tab, "Deskorolka")
+        self.tabs.addTab(self.wheel_tab, "Kółko")
+        self.tabs.addTab(self.axle_tab, "Ośka")
+        self.tabs.addTab(self.truck_tab, "Truck")
+        self.tabs.addTab(self.board_tab, "Deska")
 
-        tabs.addTab(skateboard_tab, "Deskorolka")
-        tabs.addTab(wheel_tab, "Kółko")
-        tabs.addTab(axle_tab, "Ośka")
-        tabs.addTab(truck_tab, "Truck")
-        tabs.addTab(board_tab, "Deska")
+        self.vright_layout.addWidget(self.ghp_label, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.vright_layout.addWidget(self.ghp_table)
+        self.vright_layout.addWidget(self.ghp_on_storage_label, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.vright_layout.addWidget(self.tabs)
 
-        vright_layout.addWidget(ghp_label, alignment=Qt.AlignmentFlag.AlignHCenter)
-        vright_layout.addWidget(ghp_table)
-        vright_layout.addWidget(ghp_on_storage_label, alignment=Qt.AlignmentFlag.AlignHCenter)
-        vright_layout.addWidget(tabs)
-
-        self.hlayout.addLayout(vleft_layout)
-        self.hlayout.addLayout(vright_layout)
+        self.hlayout.addLayout(self.vleft_layout)
+        self.hlayout.addLayout(self.vright_layout)
 
     def init_materials_table(self):
         with open("data/materials.json") as f:
@@ -154,3 +151,12 @@ class MainWindow(QMainWindow):
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         return table, on_storage_label
+
+def init_mrp_table(self, component):
+    pass
+
+def init_presets(self):
+    pass
+
+def change_preset(self):
+    pass
