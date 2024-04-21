@@ -28,7 +28,7 @@ class MainWindow(QMainWindow):
 
         self.preset_dropdown_menu = QComboBox()
 
-        self. materials_label = QLabel("Materiały")
+        self.materials_label = QLabel("Materiały")
         self.orders_label = QLabel("Zamówienia")
 
         self.materials_table = self.init_materials_table()
@@ -68,6 +68,9 @@ class MainWindow(QMainWindow):
 
         self.hlayout.addLayout(self.vleft_layout)
         self.hlayout.addLayout(self.vright_layout)
+
+        self.preset_dropdown_menu.currentIndexChanged.connect(self.change_preset)
+        self.init_presets()
 
     def init_materials_table(self):
         with open("data/materials.json") as f:
@@ -152,11 +155,39 @@ class MainWindow(QMainWindow):
         table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         return table, on_storage_label
 
-def init_mrp_table(self, component):
-    pass
+    def init_mrp_table(self, component):
+        pass
 
-def init_presets(self):
-    pass
+    def init_presets(self):
+        with open("data/presets.json") as f:
+            presets = json.load(f)
 
-def change_preset(self):
-    pass
+        for preset in presets:
+            self.preset_dropdown_menu.addItem(preset["name"])
+
+    def change_preset(self, index):
+        with open("data/presets.json") as f:
+            presets = json.load(f)
+
+        preset_name = self.preset_dropdown_menu.itemText(index)
+
+        stack = presets
+        preset = ""
+        while stack:
+            current_node = stack.pop()
+            if isinstance(current_node, dict):
+                if current_node.get('name') == preset_name:
+                    preset = current_node
+                    break
+                stack.extend(current_node.values())
+            elif isinstance(current_node, list):
+                stack.extend(current_node)
+
+        for x in range(0, 5):
+            for y in range(0, 5):
+                self.materials_table.item(x, y).setText(str(list(list(preset["values"]["materials"].values())[x].values())[y]))
+
+        self.materials_table.sortByColumn(4, Qt.SortOrder.AscendingOrder)
+
+        for order in preset["values"]["orders"]:
+            self.orders_table.item(0, order["week"] - 1).setText(str(order["orders"]))
