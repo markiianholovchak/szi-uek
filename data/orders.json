@@ -1,0 +1,30 @@
+[
+ {
+  "week": 1,
+  "orders": 0
+ },
+ {
+  "week": 2,
+  "orders": 0
+ },
+ {
+  "week": 3,
+  "orders": 20
+ },
+ {
+  "week": 4,
+  "orders": 0
+ },
+ {
+  "week": 5,
+  "orders": 0
+ },
+ {
+  "week": 6,
+  "orders": 50
+ },
+ {
+  "week": 7,
+  "orders": 20
+ }
+]
