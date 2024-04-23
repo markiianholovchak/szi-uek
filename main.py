@@ -1,50 +1,167 @@
 import pandas as pd
+import math
 
 
 materials = pd.read_json("./materials.json")
-
 orders = pd.read_json("./orders.json")
 
 
-ghp = pd.DataFrame(orders.transpose())
+MSP_ROW_EXPECTED_DEMAND = "Przewidywany popyt"
+MSP_ROW_PRODUCE = "Produkcja"
+MSP_ROW_IN_STOCK = "Dostępne"
 
-ghp.index = ["Tydzień", "Przewidywany popyt"]
+def msp_calculate_in_stock(msp,  weekColumnIndex):
+    return ((msp.loc[MSP_ROW_IN_STOCK, msp.columns[weekColumnIndex - 1]] + msp.loc[MSP_ROW_PRODUCE, msp.columns[weekColumnIndex]]) - msp.loc[MSP_ROW_EXPECTED_DEMAND, msp.columns[weekColumnIndex]])
 
-produkcja = [0] * len(ghp.columns)
-dostepne = [0] * len(ghp.columns)
+def msp_place_order(msp, weekColumnIndex, materialInformation):
+    if(msp.at[MSP_ROW_PRODUCE, msp.columns[weekColumnIndex]] > 0):
+        raise Exception("Order has already been placed for given week.")
 
-# Calculate GHP:
-skateboardStorage = materials.skateboard.storage
-skateboardsPerOted = materials.skateboard.units_per_order
+    msp.at[MSP_ROW_PRODUCE, msp.columns[weekColumnIndex]] = materialInformation.units_per_order
+    msp.at[MSP_ROW_IN_STOCK, msp.columns[weekColumnIndex]] = msp.at[MSP_ROW_IN_STOCK, msp.columns[weekColumnIndex - 1]] + materialInformation.units_per_order
+    return msp
 
-for index, value in ghp.iloc[1].items():
-    if index == 0: 
-        dostepne[index] = (skateboardStorage - value)
-    else:
-        stepBack = 0
-        dostepne[index] = dostepne[index-1] + produkcja[index] - value
-        while dostepne[index] < 0:
-            produkcja[index - stepBack] = skateboardsPerOted
-            for i in range(index-stepBack, index + 1):
-                dostepne[i] = dostepne[i - 1] + produkcja[i] - ghp.iloc[1, i] 
-            stepBack += 1
+def build_msp(productInformation):
+    orders = pd.read_json("./orders.json").transpose()
+    demandDict = {orders.columns.get_loc(value) + 1: [orders.at['orders', value], *[0] * 2] for value in orders.columns}
+
+    msp = pd.DataFrame(demandDict)
+    msp.index = [MSP_ROW_EXPECTED_DEMAND, MSP_ROW_PRODUCE, MSP_ROW_IN_STOCK]
+
+    for col_name in msp.columns:
+        column_index = msp.columns.get_loc(col_name)
+        expected_in_stock = None
+        if column_index == 0: 
+            expected_in_stock = (productInformation.storage - msp.at[MSP_ROW_EXPECTED_DEMAND, msp.columns[column_index]])
+        else:
+            expected_in_stock = msp_calculate_in_stock(msp, column_index)
         
+        if expected_in_stock < 0:
+            stepsBack = math.ceil(-expected_in_stock / productInformation.units_per_order)
+            if(column_index - stepsBack * productInformation.ready_in_weeks < 0):
+                print("Error: Can not build ghp: orders are too big")
+                return
+            for i in range(column_index - stepsBack * productInformation.ready_in_weeks, column_index - productInformation.ready_in_weeks + 1):
+                msp = msp_place_order(msp, i, productInformation)
+            expected_in_stock = msp_calculate_in_stock(msp, column_index)
+
+        msp.at[MSP_ROW_IN_STOCK, col_name] = expected_in_stock
         
+    return msp
 
-ghp.loc[len(ghp.index)] = produkcja
-ghp.loc[len(ghp.index)] = dostepne
+def create_and_print_msp(product_information):
+    try:
+        msp = build_msp(product_information)
+        print()
+        print("==============================================================", )
+        print(f"Główny harmonogram produkcji dla {product_information.name}:")
+        print(msp)
+        print(f"Na stanie: {product_information.storage}")
+        print("==============================================================", )
+        print()
+        return msp
+    except Exception as e:
+        print(f"Could not build this mrp for the given production schedule")
+        print(f"Error: {e}")
+        return
 
-ghp.index = ["Tydzień", "Przewidywany popyt", "Produkcja", "Dostępne"]
+MRP_ROW_OVERALL_DEMAND = "Całkowite zapotrzebowanie"
+MRP_ROW_EXPECTED_DELIVERY = "Planowane przyjęcia"
+MRP_ROW_IN_STOCK = "Przewidywanie na stanie"
+MRP_ROW_DEMAND_NETTO = "Zapotrzebowanie netto"
+MRP_ROW_PLANNED_ORDERS = "Planowane zamówienia"
+MRP_ROW_PLANNED_ORDERS_DELIVERY = "Planowane przyjecie zamówień"
 
-print(materials.skateboard.storage)
 
-print()
-print("==============================================================", )
-print("Główny harmonogram produkcji:")
-print(ghp)
-print(f"Na stanie: {skateboardStorage}")
-print("==============================================================", )
-print()
+def mrp_place_order(mrp, weekColumnIndex, materialInformation):
+    if(mrp.at[MRP_ROW_PLANNED_ORDERS, mrp.columns[weekColumnIndex]]):
+        raise Exception("Order has already been placed for given week.")
+
+    mrp.at[MRP_ROW_PLANNED_ORDERS, mrp.columns[weekColumnIndex]] = materialInformation.units_per_order
+    mrp.at[MRP_ROW_PLANNED_ORDERS_DELIVERY, mrp.columns[weekColumnIndex+materialInformation.ready_in_weeks]] = materialInformation.units_per_order
+    mrp.at[MRP_ROW_IN_STOCK, mrp.columns[weekColumnIndex+materialInformation.ready_in_weeks]] = mrp.at[MRP_ROW_IN_STOCK, mrp.columns[weekColumnIndex+materialInformation.ready_in_weeks]] + materialInformation.units_per_order
+    return mrp
+
+def mrp_calculate_in_stock(mrp,  weekColumnIndex):
+    return ((mrp.loc[MRP_ROW_IN_STOCK, mrp.columns[weekColumnIndex - 1]] + mrp.loc[MRP_ROW_EXPECTED_DELIVERY, mrp.columns[weekColumnIndex]] + mrp.loc[MRP_ROW_PLANNED_ORDERS_DELIVERY, mrp.columns[weekColumnIndex]]) - mrp.loc[MRP_ROW_OVERALL_DEMAND, mrp.columns[weekColumnIndex]])
+
+def build_mrp(demand, materialInformation):
+    demandDict = {index + 1: [value, *[0] * 5] for index, value in enumerate(demand)}
+    mrp = pd.DataFrame(demandDict)
+    mrp.index = [MRP_ROW_OVERALL_DEMAND, MRP_ROW_EXPECTED_DELIVERY, MRP_ROW_IN_STOCK, MRP_ROW_DEMAND_NETTO, MRP_ROW_PLANNED_ORDERS, MRP_ROW_PLANNED_ORDERS_DELIVERY]
+
+    for col_name in mrp.columns:
+        column_index = mrp.columns.get_loc(col_name)
+        expected_in_stock = None
+        if(column_index == 0):
+            expected_in_stock = ((materialInformation.storage + mrp.loc[MRP_ROW_EXPECTED_DELIVERY, col_name]) - (mrp.loc[MRP_ROW_OVERALL_DEMAND, col_name]))
+        else: 
+            expected_in_stock = mrp_calculate_in_stock(mrp, column_index)
+        if expected_in_stock < 0:
+            stepsBack = math.ceil(-expected_in_stock / materialInformation.units_per_order)
+            mrp.at[MRP_ROW_DEMAND_NETTO, col_name] = -expected_in_stock
+
+            if(column_index - stepsBack * materialInformation.ready_in_weeks < 0):
+                raise Exception("Not enough time to place needed orders")
+
+            for i in range(column_index - stepsBack * materialInformation.ready_in_weeks, column_index - materialInformation.ready_in_weeks + 1):
+                mrp = mrp_place_order(mrp=mrp, weekColumnIndex=i, materialInformation=materialInformation)
+            expected_in_stock = mrp_calculate_in_stock(mrp, column_index)
+                
+            #        print("Error: could not build MRP. The order is too big")
+            #       return
+        mrp.at[MRP_ROW_IN_STOCK, col_name] = expected_in_stock
+
+    return mrp
+    
+def create_and_print_mrp(materialInformation):
+    print("==============================================================", )
+    print(f"MRP for: {materialInformation.name}")
+    try:
+        mrp = build_mrp(demand=[0,0,0,15,10,0], materialInformation=materialInformation)
+        print(mrp)
+        print(f"Czas realizacji: {materialInformation.ready_in_weeks}")
+        print(f"Wielkość partii: {materialInformation.units_per_order}")
+        print(f"Poziom BOM: {materialInformation.level}")
+        print(f"Na stanie: {materialInformation.storage}")
+        print("==============================================================", )
+        print()
+        return mrp
+    except Exception as e:
+        print(f"Could not build this mrp for the given production schedule")
+        print(f"Error: {e}")
+        return
+            
+            
+
+
+
+# Build master production schedule
+
+def main():
+    msp = create_and_print_msp(materials.skateboard)
+    if msp is None:
+        return
+
+    mrp_elements = [materials.truck, materials.board, materials.wheel, materials.axle]
+
+    for mrp_element in mrp_elements:
+        mrp = create_and_print_mrp(mrp_element)
+        if(mrp is None):
+            return
+    
+    print("GHP AND MRP BUILT SUCCESSFULY!")
+    
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+     
+
+
 
 
 
