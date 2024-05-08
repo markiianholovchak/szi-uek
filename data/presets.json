@@ -99,24 +99,24 @@
                   },
                   {
                     "week": 6,
-                    "orders": 0
+                    "orders": 15
                   },
                   {
                     "week": 7,
-                    "orders": 15
+                    "orders": 0
                   }
             ],
             "materials":{
                   "skateboard": {
                     "ready_in_weeks": 1,
-                    "storage": 0,
+                    "storage": 10,
                     "units_per_order": 25,
                     "units_required": 1,
                     "level": 0
                 },
                 "board": {
                     "ready_in_weeks": 1,
-                    "storage": 0,
+                    "storage": 15,
                     "units_per_order": 5,
                     "units_required": 1,
                     "level": 1
@@ -137,12 +137,85 @@
                 },
                 "wheel": {
                     "ready_in_weeks": 2,
-                    "storage": 10,
+                    "storage": 15,
                     "units_per_order": 5,
                     "units_required": 1,
                     "level": 2
                 }
             }
         }
-        }
+        },
+        {
+          "name": "Preset 3",
+          "values":{
+              "orders":
+              [
+                  {
+                      "week": 1,
+                      "orders": 5
+                    },
+                    {
+                      "week": 2,
+                      "orders": 0
+                    },
+                    {
+                      "week": 3,
+                      "orders": 10
+                    },
+                    {
+                      "week": 4,
+                      "orders": 40
+                    },
+                    {
+                      "week": 5,
+                      "orders": 0
+                    },
+                    {
+                      "week": 6,
+                      "orders": 15
+                    },
+                    {
+                      "week": 7,
+                      "orders": 0
+                    }
+              ],
+              "materials":{
+                    "skateboard": {
+                      "ready_in_weeks": 1,
+                      "storage": 20,
+                      "units_per_order": 25,
+                      "units_required": 1,
+                      "level": 0
+                  },
+                  "board": {
+                      "ready_in_weeks": 1,
+                      "storage": 5,
+                      "units_per_order": 10,
+                      "units_required": 1,
+                      "level": 1
+                  },
+                  "truck": {
+                      "ready_in_weeks": 4,
+                      "storage": 0,
+                      "units_per_order": 50,
+                      "units_required": 2,
+                      "level": 1
+                  },
+                  "axle": {
+                      "ready_in_weeks": 2,
+                      "storage": 50,
+                      "units_per_order": 5,
+                      "units_required": 1,
+                      "level": 2
+                  },
+                  "wheel": {
+                      "ready_in_weeks": 1,
+                      "storage": 5,
+                      "units_per_order": 10,
+                      "units_required": 2,
+                      "level": 2
+                  }
+              }
+          }
+          }
 ]
