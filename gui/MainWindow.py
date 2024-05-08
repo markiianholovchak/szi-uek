@@ -32,6 +32,8 @@ class MainWindow(QMainWindow):
         self.orders_label = QLabel("Zamówienia")
 
         self.materials_table = self.init_materials_table()
+        # Styling class declaration example
+        self.materials_table.setProperty("class", "table")
         self.orders_table = self.init_orders_table()
 
         self.spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)

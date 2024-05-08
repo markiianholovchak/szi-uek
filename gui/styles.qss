@@ -1,3 +1,8 @@
 QTableWidget, QHeaderView{
     color: black;
 }
+
+/*Styling class declaration example*/
+.table{
+    color: black;
+}
