@@ -8,7 +8,7 @@
   },
   "board": {
     "ready_in_weeks": 1,
-    "storage": 0,
+    "storage": 25,
     "units_per_order": 10,
     "units_required": 1,
     "level": 1
@@ -29,9 +29,9 @@
   },
   "wheel": {
     "ready_in_weeks": 2,
-    "storage": 0,
+    "storage": 40,
     "units_per_order": 40,
-    "units_required": 1,
+    "units_required": 2,
     "level": 2
   }
 }

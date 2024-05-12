@@ -5,15 +5,15 @@
  },
  {
   "week": 2,
-  "orders": 5
+  "orders": 0
  },
  {
   "week": 3,
-  "orders": 20
+  "orders": 0
  },
  {
   "week": 4,
-  "orders": 0
+  "orders": 15
  },
  {
   "week": 5,
@@ -21,10 +21,10 @@
  },
  {
   "week": 6,
-  "orders": 50
+  "orders": 25
  },
  {
   "week": 7,
-  "orders": 20
+  "orders": 0
  }
 ]

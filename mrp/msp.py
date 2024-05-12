@@ -35,7 +35,7 @@ def build_msp(productInformation):
             stepsBack = math.ceil(-expected_in_stock / productInformation.units_per_order)
             if(column_index - stepsBack * productInformation.ready_in_weeks < 0):
                 raise Exception("Error: Can not build ghp: orders are too big")
-            for i in range(column_index - stepsBack * productInformation.ready_in_weeks, column_index - productInformation.ready_in_weeks + 1):
+            for i in range(column_index - (stepsBack - 1), column_index + 1):
                 msp = msp_place_order(msp, i, productInformation)
             expected_in_stock = msp_calculate_in_stock(msp, column_index)
 

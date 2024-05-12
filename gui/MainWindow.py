@@ -276,6 +276,23 @@ class MainWindow(QMainWindow):
         self.error_label.setText("")
         self.init_calculations()
 
+    def fill_mrp_tab(self, tab, mrp):
+        for col in range(0, 6):
+            for row in range(0, 6):
+                item = QTableWidgetItem("0")
+                item.setFlags(Qt.ItemFlag.ItemIsEditable)
+                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                tab.layout().itemAt(1).widget().item(row, col).setText((str(mrp.iloc[row, col])))
+    
+    def find_tab(self, name):
+         current_tab = None
+         for i in range(0, self.tabs.count()):
+            tab = self.tabs.widget(i)
+            if tab.objectName() == name:
+                current_tab = tab
+         return current_tab
+            
+
     def init_calculations(self):
         try:
             materials = pd.read_json("data/materials.json")
@@ -290,21 +307,55 @@ class MainWindow(QMainWindow):
 
             mrp_elements = [materials.wheel, materials.axle, materials.truck, materials.board]
 
-            for mrp_element in mrp_elements:
-                mrp_result = mrp.build_mrp([0,0,0,15,10,0], mrp_element)
 
-                current_tab = None
-                for i in range(0, self.tabs.count()):
-                    tab = self.tabs.widget(i)
-                    if tab.objectName() == mrp_element.name:
-                        current_tab = tab
+            skateboards_demand = msp_result.iloc[1].to_numpy().tolist()
+            first_level_materials_demand = [0] * len(skateboards_demand) 
+            for index, val in enumerate(skateboards_demand):
+                first_level_materials_demand[index] = 0
+                if(val <= 0): 
+                    continue
+                weekOrder = index - materials.skateboard.ready_in_weeks
+                if(weekOrder < 0): 
+                    raise Exception("Could not make the orders in time.")
+                first_level_materials_demand[weekOrder] = val
+            
+            print(first_level_materials_demand)
 
-                if current_tab:
-                    for col in range(0, 6):
-                        for row in range(0, 6):
-                            item = QTableWidgetItem("0")
-                            item.setFlags(Qt.ItemFlag.ItemIsEditable)
-                            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                            current_tab.layout().itemAt(1).widget().item(row, col).setText((str(mrp_result.iloc[row, col])))
+            mrp_truck = mrp.build_mrp(first_level_materials_demand, materials.truck)
+            truck_tab = self.find_tab(materials.truck.name)
+            self.fill_mrp_tab(truck_tab, mrp_truck)
+
+            mrp_board = mrp.build_mrp(first_level_materials_demand, materials.board)
+            board_tab = self.find_tab(materials.board.name)
+            self.fill_mrp_tab(board_tab, mrp_board)
+
+            truck_demand = mrp_truck.iloc[4].to_numpy().tolist()
+            mrp_axle = mrp.build_mrp(mrp_truck.iloc[4].to_numpy().tolist(), materials.axle)
+            axle_tab = self.find_tab(materials.axle.name)
+            self.fill_mrp_tab(axle_tab, mrp_axle)
+
+            wheels_demand = list(map(lambda x: x  * materials.wheel.units_required, truck_demand))
+            print(wheels_demand)
+            mrp_wheels = mrp.build_mrp(wheels_demand, materials.wheel)
+            wheel_tab = self.find_tab(materials.wheel.name)
+            self.fill_mrp_tab(wheel_tab, mrp_wheels)
+            
+
+            # for mrp_element in mrp_elements:
+            #     mrp_result = mrp.build_mrp([0,0,0,15,10,0], mrp_element)
+
+            #     current_tab = None
+            #     for i in range(0, self.tabs.count()):
+            #         tab = self.tabs.widget(i)
+            #         if tab.objectName() == mrp_element.name:
+            #             current_tab = tab
+
+            #     if current_tab:
+            #         for col in range(0, 6):
+            #             for row in range(0, 6):
+            #                 item = QTableWidgetItem("0")
+            #                 item.setFlags(Qt.ItemFlag.ItemIsEditable)
+            #                 item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            #                 current_tab.layout().itemAt(1).widget().item(row, col).setText((str(mrp_result.iloc[row, col])))
         except Exception as e:
             self.error_label.setText(str(e))
