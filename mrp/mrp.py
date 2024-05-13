@@ -11,7 +11,7 @@ MRP_ROW_PLANNED_ORDERS_DELIVERY = "Planowane przyjecie zamówień"
 
 def mrp_place_order(mrp, weekColumnIndex, materialInformation):
     if(mrp.at[MRP_ROW_PLANNED_ORDERS, mrp.columns[weekColumnIndex]]):
-        raise Exception("Order has already been placed for given week.")
+        raise Exception("Zamówienie zostało już złożone na dany tydzień.")
 
     mrp.at[MRP_ROW_PLANNED_ORDERS, mrp.columns[weekColumnIndex]] = materialInformation.units_per_order
     mrp.at[MRP_ROW_PLANNED_ORDERS_DELIVERY, mrp.columns[weekColumnIndex+materialInformation.ready_in_weeks]] = materialInformation.units_per_order
@@ -38,7 +38,7 @@ def build_mrp(demand, materialInformation):
             mrp.at[MRP_ROW_DEMAND_NETTO, col_name] = -expected_in_stock
 
             if(column_index - stepsBack * materialInformation.ready_in_weeks < 0):
-                raise Exception("Not enough time to place needed orders")
+                raise Exception("Za mało czasu na złożenie potrzebnych zamówień.")
 
             for i in range(column_index - stepsBack * materialInformation.ready_in_weeks, column_index - materialInformation.ready_in_weeks + 1):
                 mrp = mrp_place_order(mrp=mrp, weekColumnIndex=i, materialInformation=materialInformation)
