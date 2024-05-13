@@ -10,7 +10,7 @@ def msp_calculate_in_stock(msp,  weekColumnIndex):
 
 def msp_place_order(msp, weekColumnIndex, materialInformation):
     if(msp.at[MSP_ROW_PRODUCE, msp.columns[weekColumnIndex]] > 0):
-        raise Exception("Order has already been placed for given week.")
+        raise Exception("Zamówienie zostało już złożone na dany tydzień.")
 
     msp.at[MSP_ROW_PRODUCE, msp.columns[weekColumnIndex]] = materialInformation.units_per_order
     msp.at[MSP_ROW_IN_STOCK, msp.columns[weekColumnIndex]] = msp.at[MSP_ROW_IN_STOCK, msp.columns[weekColumnIndex - 1]] + materialInformation.units_per_order
