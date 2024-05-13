@@ -333,7 +333,8 @@ class MainWindow(QMainWindow):
                     continue
                 weekOrder = index - materials.skateboard.ready_in_weeks
                 if(weekOrder < 0): 
-                    raise Exception("Could not make the orders in time.")
+                    first_level_materials_demand[0] = val
+                    continue
                 first_level_materials_demand[weekOrder] = val
 
             truck_demand = list(map(lambda x: x  * materials.truck.units_required, first_level_materials_demand))

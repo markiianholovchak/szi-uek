@@ -10,7 +10,9 @@ def msp_calculate_in_stock(msp,  weekColumnIndex):
 
 def msp_place_order(msp, weekColumnIndex, materialInformation):
     if(msp.at[MSP_ROW_PRODUCE, msp.columns[weekColumnIndex]] > 0):
-        raise Exception("Zamówienie zostało już złożone na dany tydzień.")
+        previousStock = msp.at[MSP_ROW_IN_STOCK, msp.columns[weekColumnIndex - 1]] if weekColumnIndex > 0 else materialInformation.storage
+        msp.at[MSP_ROW_IN_STOCK, msp.columns[weekColumnIndex]] = previousStock + msp.at[MSP_ROW_PRODUCE, msp.columns[weekColumnIndex]] - msp.at[MSP_ROW_EXPECTED_DEMAND, msp.columns[weekColumnIndex]]
+        return msp
 
     msp.at[MSP_ROW_PRODUCE, msp.columns[weekColumnIndex]] = materialInformation.units_per_order
     msp.at[MSP_ROW_IN_STOCK, msp.columns[weekColumnIndex]] = msp.at[MSP_ROW_IN_STOCK, msp.columns[weekColumnIndex - 1]] + materialInformation.units_per_order
@@ -33,8 +35,10 @@ def build_msp(productInformation):
         
         if expected_in_stock < 0:
             stepsBack = math.ceil(-expected_in_stock / productInformation.units_per_order)
+            print(stepsBack, column_index, expected_in_stock)
             if(column_index - stepsBack * productInformation.ready_in_weeks < 0):
-                raise Exception("Error: Can not build ghp: orders are too big")
+                #raise Exception("Error: Can not build ghp: orders are too big")
+                stepsBack = column_index + 1
             for i in range(column_index - (stepsBack - 1), column_index + 1):
                 msp = msp_place_order(msp, i, productInformation)
             expected_in_stock = msp_calculate_in_stock(msp, column_index)

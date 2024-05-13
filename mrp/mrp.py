@@ -10,16 +10,17 @@ MRP_ROW_PLANNED_ORDERS_DELIVERY = "Planowane przyjecie zamówień"
 
 
 def mrp_place_order(mrp, weekColumnIndex, materialInformation):
-    if(mrp.at[MRP_ROW_PLANNED_ORDERS, mrp.columns[weekColumnIndex]]):
-        raise Exception("Zamówienie zostało już złożone na dany tydzień.")
+    if(mrp.at[MRP_ROW_PLANNED_ORDERS, mrp.columns[weekColumnIndex]] > 0):
+        return mrp
 
     mrp.at[MRP_ROW_PLANNED_ORDERS, mrp.columns[weekColumnIndex]] = materialInformation.units_per_order
     mrp.at[MRP_ROW_PLANNED_ORDERS_DELIVERY, mrp.columns[weekColumnIndex+materialInformation.ready_in_weeks]] = materialInformation.units_per_order
     mrp.at[MRP_ROW_IN_STOCK, mrp.columns[weekColumnIndex+materialInformation.ready_in_weeks]] = mrp.at[MRP_ROW_IN_STOCK, mrp.columns[weekColumnIndex+materialInformation.ready_in_weeks]] + materialInformation.units_per_order
     return mrp
 
-def mrp_calculate_in_stock(mrp,  weekColumnIndex):
-    return ((mrp.loc[MRP_ROW_IN_STOCK, mrp.columns[weekColumnIndex - 1]] + mrp.loc[MRP_ROW_EXPECTED_DELIVERY, mrp.columns[weekColumnIndex]] + mrp.loc[MRP_ROW_PLANNED_ORDERS_DELIVERY, mrp.columns[weekColumnIndex]]) - mrp.loc[MRP_ROW_OVERALL_DEMAND, mrp.columns[weekColumnIndex]])
+def mrp_calculate_in_stock(mrp,  weekColumnIndex, materialInformation):
+    previousInStock = mrp.loc[MRP_ROW_IN_STOCK, mrp.columns[weekColumnIndex - 1]] if weekColumnIndex > 0 else materialInformation.storage
+    return ((previousInStock + mrp.loc[MRP_ROW_EXPECTED_DELIVERY, mrp.columns[weekColumnIndex]] + mrp.loc[MRP_ROW_PLANNED_ORDERS_DELIVERY, mrp.columns[weekColumnIndex]]) - mrp.loc[MRP_ROW_OVERALL_DEMAND, mrp.columns[weekColumnIndex]])
 
 def build_mrp(demand, materialInformation):
     demandDict = {index + 1: [value, *[0] * 5] for index, value in enumerate(demand)}
@@ -31,18 +32,18 @@ def build_mrp(demand, materialInformation):
         expected_in_stock = None
         if(column_index == 0):
             expected_in_stock = ((materialInformation.storage + mrp.loc[MRP_ROW_EXPECTED_DELIVERY, col_name]) - (mrp.loc[MRP_ROW_OVERALL_DEMAND, col_name]))
+            print(materialInformation.name, expected_in_stock)
         else: 
-            expected_in_stock = mrp_calculate_in_stock(mrp, column_index)
+            expected_in_stock = mrp_calculate_in_stock(mrp, column_index, materialInformation)
         if expected_in_stock < 0:
             stepsBack = math.ceil(-expected_in_stock / materialInformation.units_per_order)
             mrp.at[MRP_ROW_DEMAND_NETTO, col_name] = -expected_in_stock
 
-            if(column_index - stepsBack * materialInformation.ready_in_weeks < 0):
-                raise Exception("Za mało czasu na złożenie potrzebnych zamówień.")
-
-            for i in range(column_index - stepsBack * materialInformation.ready_in_weeks, column_index - materialInformation.ready_in_weeks + 1):
+            rangeStart = max(0, column_index - stepsBack * materialInformation.ready_in_weeks)
+            rangeEnd = max(0, column_index - materialInformation.ready_in_weeks)
+            for i in range(rangeStart, rangeEnd + 1):
                 mrp = mrp_place_order(mrp=mrp, weekColumnIndex=i, materialInformation=materialInformation)
-            expected_in_stock = mrp_calculate_in_stock(mrp, column_index)
+            expected_in_stock = mrp_calculate_in_stock(mrp, column_index, materialInformation)
                 
             #        print("Error: could not build MRP. The order is too big")
             #       return
