@@ -298,7 +298,7 @@ class MainWindow(QMainWindow):
                 item = QTableWidgetItem("0")
                 item.setFlags(Qt.ItemFlag.ItemIsEditable)
                 item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                tab.layout().itemAt(1).widget().item(row, col).setText((str(mrp.iloc[row, col])))
+                tab.layout().itemAt(0).widget().item(row, col).setText((str(mrp.iloc[row, col])))
     
     def find_tab(self, name):
          current_tab = None
@@ -321,8 +321,6 @@ class MainWindow(QMainWindow):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                     self.ghp_table.item(row, col).setText((str(msp_result.iloc[row, col])))
 
-            mrp_elements = [materials.wheel, materials.axle, materials.truck, materials.board]
-
 
             skateboards_demand = msp_result.iloc[1].to_numpy().tolist()
             first_level_materials_demand = [0] * len(skateboards_demand) 
@@ -334,10 +332,9 @@ class MainWindow(QMainWindow):
                 if(weekOrder < 0): 
                     raise Exception("Could not make the orders in time.")
                 first_level_materials_demand[weekOrder] = val
-            
-            print(first_level_materials_demand)
 
-            mrp_truck = mrp.build_mrp(first_level_materials_demand, materials.truck)
+            truck_demand = list(map(lambda x: x  * materials.truck.units_required, first_level_materials_demand))
+            mrp_truck = mrp.build_mrp(truck_demand, materials.truck)
             truck_tab = self.find_tab(materials.truck.name)
             self.fill_mrp_tab(truck_tab, mrp_truck)
 
@@ -345,33 +342,15 @@ class MainWindow(QMainWindow):
             board_tab = self.find_tab(materials.board.name)
             self.fill_mrp_tab(board_tab, mrp_board)
 
-            truck_demand = mrp_truck.iloc[4].to_numpy().tolist()
-            mrp_axle = mrp.build_mrp(mrp_truck.iloc[4].to_numpy().tolist(), materials.axle)
+            axle_demand = mrp_truck.iloc[4].to_numpy().tolist()
+            mrp_axle = mrp.build_mrp(axle_demand, materials.axle)
             axle_tab = self.find_tab(materials.axle.name)
             self.fill_mrp_tab(axle_tab, mrp_axle)
 
-            wheels_demand = list(map(lambda x: x  * materials.wheel.units_required, truck_demand))
-            print(wheels_demand)
+            wheels_demand = list(map(lambda x: x  * materials.wheel.units_required, mrp_truck.iloc[4].to_numpy().tolist()))
             mrp_wheels = mrp.build_mrp(wheels_demand, materials.wheel)
             wheel_tab = self.find_tab(materials.wheel.name)
             self.fill_mrp_tab(wheel_tab, mrp_wheels)
-            
-
-            # for mrp_element in mrp_elements:
-            #     mrp_result = mrp.build_mrp([0,0,0,15,10,0], mrp_element)
-
-            #     current_tab = None
-            #     for i in range(0, self.tabs.count()):
-            #         tab = self.tabs.widget(i)
-            #         if tab.objectName() == mrp_element.name:
-            #             current_tab = tab
-
-            #     if current_tab:
-            #         for col in range(0, 6):
-            #             for row in range(0, 6):
-            #                 item = QTableWidgetItem("0")
-            #                 item.setFlags(Qt.ItemFlag.ItemIsEditable)
-            #                 item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            #                 current_tab.layout().itemAt(1).widget().item(row, col).setText((str(mrp_result.iloc[row, col])))
+        
         except Exception as e:
             self.error_label.setText(str(e))
