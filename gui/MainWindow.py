@@ -45,6 +45,7 @@ class MainWindow(QMainWindow):
         self.preset_layout.setContentsMargins(50, 0, 50, 15)
 
         self.preset_dropdown_menu = QComboBox()
+        self.preset_dropdown_menu.setPlaceholderText("Wybierz preset")
         self.preset_layout.addWidget(self.preset_dropdown_menu)
 
         self.materials_label = QLabel("MATERIAŁY")
@@ -101,7 +102,6 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.error_label, alignment=Qt.AlignmentFlag.AlignHCenter)
         self.main_layout.addItem(self.spacer)
 
-        self.preset_dropdown_menu.currentIndexChanged.connect(self.change_preset)
         self.init_presets()
 
         self.materials_table.cellChanged.connect(self.save_changed_materials_value)
@@ -110,6 +110,8 @@ class MainWindow(QMainWindow):
         self.init_tabs()
 
         self.init_calculations()
+
+        self.preset_dropdown_menu.currentIndexChanged.connect(self.change_preset)
 
     def init_materials_table(self):
         with open("data/materials.json", 'r', encoding="utf-8") as f:
@@ -231,6 +233,7 @@ class MainWindow(QMainWindow):
             self.preset_dropdown_menu.addItem(preset["name"])
 
     def change_preset(self, index):
+        print("chuj")
         with open("data/presets.json", 'r', encoding="utf-8") as f:
             presets = json.load(f)
 
@@ -288,7 +291,7 @@ class MainWindow(QMainWindow):
 
         with open("data/orders.json", 'w', encoding="utf-8") as f:
             json.dump(orders_dict, f, indent=1)
-        
+
         self.error_label.setText("")
         self.init_calculations()
 
@@ -298,7 +301,7 @@ class MainWindow(QMainWindow):
                 item = QTableWidgetItem("0")
                 item.setFlags(Qt.ItemFlag.ItemIsEditable)
                 item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                tab.layout().itemAt(1).widget().item(row, col).setText((str(mrp.iloc[row, col])))
+                tab.layout().itemAt(0).widget().item(row, col).setText((str(mrp.iloc[row, col])))
     
     def find_tab(self, name):
          current_tab = None
